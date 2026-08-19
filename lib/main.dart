@@ -235,7 +235,7 @@ class _NavItem extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOutBack,
               transform: isSelected
-                  ? (Matrix4.identity()..scale(1.2))
+                  ? (Matrix4.identity()..scaleByDouble(1.2))
                   : Matrix4.identity(),
               transformAlignment: Alignment.center,
               child: Icon(icon, color: isSelected ? active : inactive, size: 26),
@@ -639,12 +639,12 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  final List<_CardData> _cards = [
+  final List<_CardData> _cards = const [
     _CardData('ABES ERP', Icons.school, 'https://erp.abes.ac.in/Login.aspx', Colors.blueAccent),
     _CardData('LMS', Icons.menu_book, 'https://ai-edunova.abes.ac.in/#/insync/dashboard/home', Colors.purpleAccent),
     _CardData('Student Portal', Icons.person_outline, 'https://ai-edunova.abes.ac.in/#/insync/dashboard/home', Colors.tealAccent),
     _CardData('ABES Official', Icons.account_balance, 'https://www.abes.ac.in/', Colors.orangeAccent),
-    _CardData('ABES Quiz', Icons.quiz, 'https://abesquiz.netlify.app/', const Color(0xFF39FF14)),
+    _CardData('ABES Quiz', Icons.quiz, 'https://abesquiz.netlify.app/', Color(0xFF39FF14)),
     _CardData('Official Email', Icons.email, 'mailto:info@abes.ac.in', Colors.redAccent),
   ];
 
