@@ -118,18 +118,18 @@ class _GamesHubViewState extends State<GamesHubView> {
           ),
 
           // --- Locked Cards ---
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: _LockedGameCard(
               title: '10-Second Bug Smasher',
               subtitle: 'Smash the bugs before they crash the server.',
-              emoji: '??',
+              emoji: '🐛',
             ),
           ),
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: _LockedGameCard(
               title: 'Server Ping',
               subtitle: 'Keep the packets alive across a maze of routers.',
-              emoji: '???',
+              emoji: '🖥️',
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),

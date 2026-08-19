@@ -454,7 +454,7 @@ class _VaultViewState extends State<VaultView> {
                     backgroundColor: Colors.blueAccent,
                   ),
                   onPressed: () {
-                    Share.share('Download ABES Nexus: https://github.com/krishnabarnwal/abes-nexus');
+                    SharePlus.instance.share(ShareParams(text: 'Download ABES Nexus: https://github.com/krishnabarnwal/abes-nexus'));
                   },
                 ),
               ],
