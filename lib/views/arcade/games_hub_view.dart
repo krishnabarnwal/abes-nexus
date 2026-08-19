@@ -130,14 +130,6 @@ class _GamesHubViewState extends State<GamesHubView> {
             ),
           ),
 
-          // --- Coming Soon Header ---
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
-              child: Text('COMING SOON', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 2.5)),
-            ),
-          ),
-
           // --- Server Ping Card (now active) ---
           SliverToBoxAdapter(
             child: _GameCard(
@@ -152,6 +144,7 @@ class _GamesHubViewState extends State<GamesHubView> {
               },
             ),
           ),
+
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       ),
@@ -253,62 +246,6 @@ class _GameCard extends StatelessWidget {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// -- Locked / Coming Soon Card -------------------------------------------------
-class _LockedGameCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String emoji;
-
-  const _LockedGameCard({
-    required this.title,
-    required this.subtitle,
-    required this.emoji,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: 0.45,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(emoji, style: const TextStyle(fontSize: 28)),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(subtitle, style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Icon(Icons.lock, color: Colors.white38, size: 22),
-            ],
-          ),
         ),
       ),
     );
