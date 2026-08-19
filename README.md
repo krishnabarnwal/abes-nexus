@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # abes_net
 
 A new Flutter project.
@@ -15,3 +16,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# abes-nexus
+A modern, feature-rich student platform and utility app designed specifically for ABES Engineering College students.
+>>>>>>> de31dcc85ebb31b117e9b550d19b6093f13dc140
