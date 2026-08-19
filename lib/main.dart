@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -392,7 +393,7 @@ class _VaultViewState extends State<VaultView> {
                   padding: const EdgeInsets.all(8),
                   color: Colors.white,
                   child: QrImageView(
-                    data: 'https://github.com/placeholder/abes_nexus',
+                    data: 'https://github.com/krishnabarnwal/abes-nexus',
                     version: QrVersions.auto,
                     size: 150.0,
                   ),
@@ -405,7 +406,7 @@ class _VaultViewState extends State<VaultView> {
                     backgroundColor: Colors.blueAccent,
                   ),
                   onPressed: () {
-                    Share.share('Download ABES Nexus: https://github.com/placeholder/abes_nexus');
+                    Share.share('Download ABES Nexus: https://github.com/krishnabarnwal/abes-nexus');
                   },
                 ),
               ],
@@ -460,7 +461,10 @@ class DashboardView extends StatelessWidget {
 
   Future<void> _launchUrl(String urlString) async {
     final url = Uri.parse(urlString);
-    if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
+    final mode = urlString.startsWith('http') 
+        ? LaunchMode.inAppWebView 
+        : LaunchMode.externalApplication;
+    if (!await launchUrl(url, mode: mode)) {
       debugPrint('Could not launch $url');
     }
   }
@@ -474,9 +478,12 @@ class DashboardView extends StatelessWidget {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         children: [
-          _buildCard('ABES ERP', Icons.school, 'https://ai-edunova.abes.ac.in/#/insync/dashboard/home'),
+          _buildCard('ABES ERP', Icons.school, 'https://erp.abes.ac.in/Login.aspx'),
           _buildCard('LMS', Icons.menu_book, 'https://ai-edunova.abes.ac.in/#/insync/dashboard/home'),
           _buildCard('Student Portal', Icons.person_outline, 'https://ai-edunova.abes.ac.in/#/insync/dashboard/home'),
+          _buildCard('ABES Official', Icons.account_balance, 'https://www.abes.ac.in/'),
+          _buildCard('ABES Quiz', Icons.quiz, 'https://abesquiz.netlify.app/'),
+          _buildCard('Official Email', Icons.email, 'mailto:info@abes.ac.in'),
         ],
       ),
     );
@@ -521,6 +528,7 @@ class SpeedTestView extends StatefulWidget {
 
 class _SpeedTestViewState extends State<SpeedTestView> {
   String _downloadSpeed = '0.00';
+  String _uploadSpeed = '0.00';
   String _latency = '0';
   bool _isTesting = false;
   double _progress = 0.0;
@@ -529,6 +537,7 @@ class _SpeedTestViewState extends State<SpeedTestView> {
     setState(() {
       _isTesting = true;
       _downloadSpeed = '0.00';
+      _uploadSpeed = '0.00';
       _latency = '0';
       _progress = 0.0;
     });
@@ -567,6 +576,27 @@ class _SpeedTestViewState extends State<SpeedTestView> {
       }
       stopwatch.stop();
 
+      // 3. Measure upload speed
+      setState(() {
+        _progress = 0.5; // Indicate transition to upload phase
+      });
+      final payload = Uint8List(1000000); // 1MB payload
+      stopwatch.reset();
+      stopwatch.start();
+      await http.post(
+        Uri.parse('https://httpbin.org/post'),
+        body: payload,
+      );
+      stopwatch.stop();
+      final uploadElapsed = stopwatch.elapsedMilliseconds;
+      if (uploadElapsed > 0) {
+        final uploadSeconds = uploadElapsed / 1000.0;
+        final uploadMbps = (1000000 * 8) / (uploadSeconds * 1000000);
+        setState(() {
+          _uploadSpeed = uploadMbps.toStringAsFixed(2);
+        });
+      }
+
     } catch (e) {
       debugPrint('Speed test error: $e');
     } finally {
@@ -603,27 +633,51 @@ class _SpeedTestViewState extends State<SpeedTestView> {
               ),
             ),
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  const Text('Download Speed', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                  const SizedBox(height: 8),
-                  Text('$_downloadSpeed Mbps', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
-                  const SizedBox(height: 24),
-                  LinearProgressIndicator(
-                    value: _progress,
-                    backgroundColor: const Color(0xFF0F172A),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
-                    minHeight: 8,
-                    borderRadius: BorderRadius.circular(4),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text('Download (Mbps)', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                        const SizedBox(height: 8),
+                        Text(_downloadSpeed, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text('Upload (Mbps)', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                        const SizedBox(height: 8),
+                        Text(_uploadSpeed, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            LinearProgressIndicator(
+              value: _progress,
+              backgroundColor: const Color(0xFF0F172A),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+              minHeight: 8,
+              borderRadius: BorderRadius.circular(4),
             ),
             const SizedBox(height: 60),
             ElevatedButton(
