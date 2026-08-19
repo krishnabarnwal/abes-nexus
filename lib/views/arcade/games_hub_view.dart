@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'packet_jumper_view.dart';
+import 'bug_smasher_view.dart';
 
 class GamesHubView extends StatefulWidget {
   const GamesHubView({super.key});
@@ -11,6 +12,7 @@ class GamesHubView extends StatefulWidget {
 
 class _GamesHubViewState extends State<GamesHubView> {
   int _packetJumperHighScore = 0;
+  int _bugSmasherHighScore = 0;
 
   @override
   void initState() {
@@ -22,6 +24,7 @@ class _GamesHubViewState extends State<GamesHubView> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _packetJumperHighScore = prefs.getInt('packet_jumper_high_score') ?? 0;
+      _bugSmasherHighScore = prefs.getInt('bug_smasher_high_score') ?? 0;
     });
   }
 
@@ -109,6 +112,21 @@ class _GamesHubViewState extends State<GamesHubView> {
             ),
           ),
 
+          // --- Bug Smasher Card (now active) ---
+          SliverToBoxAdapter(
+            child: _GameCard(
+              title: '10-Second Bug Smasher',
+              subtitle: 'Squash NULL_PTR, FATAL, and 404 errors before time runs out!',
+              emoji: '🐛',
+              accentColor: const Color(0xFFFF3333),
+              highScore: _bugSmasherHighScore,
+              onPlay: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => const BugSmasherView()));
+                _refreshScores();
+              },
+            ),
+          ),
+
           // --- Coming Soon Header ---
           const SliverToBoxAdapter(
             child: Padding(
@@ -117,14 +135,7 @@ class _GamesHubViewState extends State<GamesHubView> {
             ),
           ),
 
-          // --- Locked Cards ---
-          const SliverToBoxAdapter(
-            child: _LockedGameCard(
-              title: '10-Second Bug Smasher',
-              subtitle: 'Smash the bugs before they crash the server.',
-              emoji: '🐛',
-            ),
-          ),
+          // --- Server Ping (still locked) ---
           const SliverToBoxAdapter(
             child: _LockedGameCard(
               title: 'Server Ping',
