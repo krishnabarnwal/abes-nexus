@@ -235,7 +235,7 @@ class _NavItem extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOutBack,
               transform: isSelected
-                  ? (Matrix4.identity()..scaleByDouble(1.2))
+                  ? (Matrix4.diagonal3Values(1.2, 1.2, 1.0))
                   : Matrix4.identity(),
               transformAlignment: Alignment.center,
               child: Icon(icon, color: isSelected ? active : inactive, size: 26),
