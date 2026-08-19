@@ -72,7 +72,7 @@ class _GamesHubViewState extends State<GamesHubView> {
                     children: [
                       Text(
                         'Campus Arcade',
-                        style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.black, letterSpacing: 0.5),
+                        style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 0.5),
                       ),
                       SizedBox(height: 4),
                       Text(
@@ -228,7 +228,7 @@ class _GameCard extends StatelessWidget {
                     elevation: 0,
                     shadowColor: const Color(0xFF39FF14),
                   ),
-                  child: const Text('PLAY NOW', style: TextStyle(fontWeight: FontWeight.black, fontSize: 13, letterSpacing: 1)),
+                  child: const Text('PLAY NOW', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1)),
                 ),
               ],
             ),

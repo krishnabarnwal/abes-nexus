@@ -101,7 +101,7 @@ class _PacketJumperViewState extends State<PacketJumperView>
         gameSpeed = (0.008 + score * 0.0003).clamp(0.008, 0.026);
       }
       const double packetLeft = 0.12;
-      final double packetRight = packetLeft + packetSize;
+      const double packetRight = packetLeft + packetSize;
       final double packetBottom = packetY;
       final double packetTop = packetY + packetSize;
       final double obsLeft = obstacleX + 0.01;
@@ -201,17 +201,17 @@ class _PacketJumperViewState extends State<PacketJumperView>
                 Positioned(
                   top: floorPx,
                   left: 0, right: 0,
-                  child: Container(height: 2, color: Color(0x990EA5E9)),
+                  child: Container(height: 2, color: const Color(0x990EA5E9)),
                 ),
                 Positioned(
                   top: 12, left: 0, right: 0,
                   child: Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Color(0xCC1E293B),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Color(0x660EA5E9)),
+                        borderRadius: BorderRadius.all(Radius.circular(30)),
+                        border: Border.fromBorderSide(BorderSide(color: Color(0x660EA5E9))),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -234,15 +234,15 @@ class _PacketJumperViewState extends State<PacketJumperView>
                           decoration: BoxDecoration(
                             color: const Color(0xFFDC2626),
                             borderRadius: BorderRadius.circular(8),
-                            boxShadow: [BoxShadow(color: Color(0x80DC2626), blurRadius: 12)],
+                            boxShadow: const [BoxShadow(color: Color(0x80DC2626), blurRadius: 12)],
                           ),
-                          child: const Center(child: Text('404', style: TextStyle(color: Colors.white, fontWeight: FontWeight.black, fontSize: 16))),
+                          child: const Center(child: Text('404', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16))),
                         )
                       : Container(
                           decoration: BoxDecoration(
                             color: const Color(0xFFD97706),
                             borderRadius: BorderRadius.circular(8),
-                            boxShadow: [BoxShadow(color: Color(0x80D97706), blurRadius: 12)],
+                            boxShadow: const [BoxShadow(color: Color(0x80D97706), blurRadius: 12)],
                           ),
                           child: const Center(child: Icon(Icons.hourglass_top, color: Colors.white, size: 28)),
                         ),
@@ -255,7 +255,7 @@ class _PacketJumperViewState extends State<PacketJumperView>
                       decoration: BoxDecoration(
                         color: const Color(0xFF0EA5E9),
                         borderRadius: BorderRadius.circular(10),
-                        boxShadow: [BoxShadow(color: Color(0xB30EA5E9), blurRadius: 16, spreadRadius: 2)],
+                        boxShadow: const [BoxShadow(color: Color(0xB30EA5E9), blurRadius: 16, spreadRadius: 2)],
                       ),
                       child: const Center(child: Icon(Icons.wifi, color: Colors.white, size: 22)),
                     ),
@@ -286,7 +286,7 @@ class _PacketJumperViewState extends State<PacketJumperView>
           children: [
             const Icon(Icons.wifi, color: Color(0xFF0EA5E9), size: 64),
             const SizedBox(height: 16),
-            const Text('Wi-Fi Packet Jumper', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.black)),
+            const Text('Wi-Fi Packet Jumper', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
             const SizedBox(height: 8),
             const Text('Dodge 404s & loading spinners!', style: TextStyle(color: Colors.white54, fontSize: 14)),
             const SizedBox(height: 24),
@@ -323,7 +323,7 @@ class _PacketJumperViewState extends State<PacketJumperView>
           children: [
             const Icon(Icons.wifi_off, color: Colors.redAccent, size: 56),
             const SizedBox(height: 12),
-            const Text('Connection Dropped!', style: TextStyle(color: Colors.redAccent, fontSize: 22, fontWeight: FontWeight.black)),
+            const Text('Connection Dropped!', style: TextStyle(color: Colors.redAccent, fontSize: 22, fontWeight: FontWeight.w900)),
             const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -332,7 +332,7 @@ class _PacketJumperViewState extends State<PacketJumperView>
                 children: [
                   const Text('FINAL SCORE', style: TextStyle(color: Colors.white54, fontSize: 12, letterSpacing: 2)),
                   const SizedBox(height: 4),
-                  Text('$score', style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.black)),
+                  Text('$score', style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w900)),
                 ],
               ),
             ),
@@ -392,17 +392,17 @@ class _NewHighScoreBadgeState extends State<_NewHighScoreBadge>
       opacity: _opacity,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.amber.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.amber, width: 1.5),
+        decoration: const BoxDecoration(
+          color: Color(0x26FFC107), // amber with ~15% alpha baked in
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+          border: Border.fromBorderSide(BorderSide(color: Colors.amber, width: 1.5)),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.star, color: Colors.amber, size: 16),
             SizedBox(width: 6),
-            Text('NEW HIGH SCORE!', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.black, fontSize: 14, letterSpacing: 1.5)),
+            Text('NEW HIGH SCORE!', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1.5)),
             SizedBox(width: 6),
             Icon(Icons.star, color: Colors.amber, size: 16),
           ],
@@ -416,7 +416,7 @@ class _StarfieldPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = const Color(0x40FFFFFF);
-    final stars = [
+    const stars = [
       Offset(0.05, 0.08), Offset(0.15, 0.22), Offset(0.28, 0.05),
       Offset(0.40, 0.18), Offset(0.55, 0.10), Offset(0.67, 0.27),
       Offset(0.78, 0.06), Offset(0.88, 0.20), Offset(0.93, 0.38),
