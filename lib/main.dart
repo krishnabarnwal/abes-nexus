@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'views/arcade/games_hub_view.dart';
+import 'widgets/ui_kit.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
@@ -61,11 +63,7 @@ class AbesNetApp extends StatelessWidget {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0F172A),
         primaryColor: const Color(0xFF1E293B),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFF1E293B),
-          selectedItemColor: Colors.blueAccent,
-          unselectedItemColor: Colors.white54,
-        ),
+        fontFamily: 'Roboto',
       ),
       home: const MainScaffold(),
     );
@@ -79,8 +77,12 @@ class MainScaffold extends StatefulWidget {
   State<MainScaffold> createState() => _MainScaffoldState();
 }
 
-class _MainScaffoldState extends State<MainScaffold> {
+class _MainScaffoldState extends State<MainScaffold>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  late AnimationController _bgCtrl;
+  late Animation<Color?> _bgColor1;
+  late Animation<Color?> _bgColor2;
 
   final List<Widget> _views = [
     const VaultView(),
@@ -89,43 +91,180 @@ class _MainScaffoldState extends State<MainScaffold> {
     const GamesHubView(),
   ];
 
+  static const _navItems = [
+    (Icons.home_rounded, 'Vault'),
+    (Icons.grid_view_rounded, 'Campus'),
+    (Icons.speed_rounded, 'Network'),
+    (Icons.videogame_asset_rounded, 'Arcade'),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _bgCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat(reverse: true);
+    _bgColor1 = ColorTween(
+      begin: const Color(0xFF0F172A),
+      end: const Color(0xFF0B101E),
+    ).animate(_bgCtrl);
+    _bgColor2 = ColorTween(
+      begin: const Color(0xFF0B101E),
+      end: const Color(0xFF162238),
+    ).animate(_bgCtrl);
+  }
+
+  @override
+  void dispose() {
+    _bgCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ABES Nexus'),
-        backgroundColor: const Color(0xFF1E293B),
-        elevation: 0,
+    return AnimatedBuilder(
+      animation: _bgCtrl,
+      builder: (context, child) {
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBody: true,
+          appBar: AppBar(
+            title: const Text(
+              'ABES Nexus',
+              style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
+            ),
+            backgroundColor: const Color(0xFF1E293B).withValues(alpha: 0.9),
+            elevation: 0,
+            flexibleSpace: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_bgColor1.value!, _bgColor2.value!],
+              ),
+            ),
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _views,
+            ),
+          ),
+          bottomNavigationBar: _buildFloatingNav(),
+        );
+      },
+    );
+  }
+
+  Widget _buildFloatingNav() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(32),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            height: 68,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(
+                _navItems.length,
+                (i) => _NavItem(
+                  icon: _navItems[i].$1,
+                  label: _navItems[i].$2,
+                  isSelected: _currentIndex == i,
+                  onTap: () => setState(() => _currentIndex = i),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _views,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Vault',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view),
-            label: 'Campus',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.speed),
-            label: 'Network',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.videogame_asset),
-            label: 'Arcade',
-          ),
-        ],
+    );
+  }
+}
+
+// ─── Floating Nav Item ────────────────────────────────────────────────────────
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const active = Color(0xFF39FF14);
+    const inactive = Color(0xFF64748B);
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 72,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutBack,
+              transform: isSelected
+                  ? (Matrix4.identity()..scale(1.2))
+                  : Matrix4.identity(),
+              transformAlignment: Alignment.center,
+              child: Icon(icon, color: isSelected ? active : inactive, size: 26),
+            ),
+            const SizedBox(height: 4),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                color: isSelected ? active : inactive,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+              child: Text(label),
+            ),
+            const SizedBox(height: 2),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              width: isSelected ? 6 : 0,
+              height: isSelected ? 6 : 0,
+              decoration: const BoxDecoration(
+                color: active,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: Color(0x8039FF14), blurRadius: 6, spreadRadius: 1),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -193,9 +332,7 @@ class _VaultViewState extends State<VaultView> {
 
     if (savedId == null || savedPassword == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please save credentials first'), backgroundColor: Colors.red),
-        );
+        showToast(context, 'Please save credentials first', type: ToastType.error);
       }
       return;
     }
@@ -222,18 +359,14 @@ class _VaultViewState extends State<VaultView> {
         await prefs.setInt('total_logins', _totalLogins);
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Wi-Fi Login Successful!'), backgroundColor: Colors.green),
-          );
+          showToast(context, 'Wi-Fi Login Successful!', type: ToastType.success);
         }
       } else {
         setState(() {
           _statusMessage = 'Status: ${response.statusCode}';
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Failed: Not on campus network or incorrect credentials.'), backgroundColor: Colors.red),
-          );
+          showToast(context, 'Login Failed: Not on campus network or incorrect credentials.', type: ToastType.error);
         }
       }
     } catch (e) {
@@ -241,9 +374,7 @@ class _VaultViewState extends State<VaultView> {
         _statusMessage = 'Error: $e';
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login Failed: Not on campus network or incorrect credentials.'), backgroundColor: Colors.red),
-        );
+        showToast(context, 'Login Failed: Connection error.', type: ToastType.error);
       }
     }
   }
@@ -267,9 +398,7 @@ class _VaultViewState extends State<VaultView> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Credentials securely saved to Vault.'), backgroundColor: Colors.green),
-      );
+      showToast(context, 'Credentials securely saved to Vault.', type: ToastType.success);
     }
   }
 
@@ -406,9 +535,7 @@ class _VaultViewState extends State<VaultView> {
                 _statusMessage = 'Background worker is active';
               });
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Background engine enabled. Waiting for ABES network...'), backgroundColor: Colors.blue),
-                );
+          showToast(context, 'Background engine enabled. Waiting for ABES network...', type: ToastType.info);
               }
             },
             style: ElevatedButton.styleFrom(
@@ -504,67 +631,101 @@ class _VaultViewState extends State<VaultView> {
   }
 }
 
-class DashboardView extends StatelessWidget {
+class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
+
+  @override
+  State<DashboardView> createState() => _DashboardViewState();
+}
+
+class _DashboardViewState extends State<DashboardView> {
+  final List<_CardData> _cards = [
+    _CardData('ABES ERP', Icons.school, 'https://erp.abes.ac.in/Login.aspx', Colors.blueAccent),
+    _CardData('LMS', Icons.menu_book, 'https://ai-edunova.abes.ac.in/#/insync/dashboard/home', Colors.purpleAccent),
+    _CardData('Student Portal', Icons.person_outline, 'https://ai-edunova.abes.ac.in/#/insync/dashboard/home', Colors.tealAccent),
+    _CardData('ABES Official', Icons.account_balance, 'https://www.abes.ac.in/', Colors.orangeAccent),
+    _CardData('ABES Quiz', Icons.quiz, 'https://abesquiz.netlify.app/', const Color(0xFF39FF14)),
+    _CardData('Official Email', Icons.email, 'mailto:info@abes.ac.in', Colors.redAccent),
+  ];
 
   Future<void> _launchUrl(String urlString) async {
     final url = Uri.parse(urlString);
-    final mode = urlString.startsWith('http') 
-        ? LaunchMode.inAppWebView 
+    final mode = urlString.startsWith('http')
+        ? LaunchMode.inAppWebView
         : LaunchMode.externalApplication;
     if (!await launchUrl(url, mode: mode)) {
-      debugPrint('Could not launch $url');
+      debugPrint('Could not launch \$url');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: GridView.count(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        children: [
-          _buildCard('ABES ERP', Icons.school, 'https://erp.abes.ac.in/Login.aspx'),
-          _buildCard('LMS', Icons.menu_book, 'https://ai-edunova.abes.ac.in/#/insync/dashboard/home'),
-          _buildCard('Student Portal', Icons.person_outline, 'https://ai-edunova.abes.ac.in/#/insync/dashboard/home'),
-          _buildCard('ABES Official', Icons.account_balance, 'https://www.abes.ac.in/'),
-          _buildCard('ABES Quiz', Icons.quiz, 'https://abesquiz.netlify.app/'),
-          _buildCard('Official Email', Icons.email, 'mailto:info@abes.ac.in'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCard(String title, IconData icon, String url) {
-    return InkWell(
-      onTap: () => _launchUrl(url),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B).withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
+        ),
+        itemCount: _cards.length,
+        itemBuilder: (context, i) {
+          final card = _cards[i];
+          return StaggeredItem(
+            index: i,
+            delayMs: 70,
+            child: SquishCard(
+              onTap: () => _launchUrl(card.url),
+              child: GlassCard(
+                padding: EdgeInsets.zero,
+                borderRadius: 18,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        card.accent.withValues(alpha: 0.08),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: card.accent.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(card.icon, size: 32, color: card.accent),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        card.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 48, color: Colors.blueAccent),
-            const SizedBox(height: 16),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), textAlign: TextAlign.center),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
+}
+
+class _CardData {
+  final String title;
+  final IconData icon;
+  final String url;
+  final Color accent;
+  const _CardData(this.title, this.icon, this.url, this.accent);
 }
 
 class SpeedTestView extends StatefulWidget {
