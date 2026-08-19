@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'packet_jumper_view.dart';
 import 'bug_smasher_view.dart';
+import 'server_ping_view.dart';
 
 class GamesHubView extends StatefulWidget {
   const GamesHubView({super.key});
@@ -13,6 +14,7 @@ class GamesHubView extends StatefulWidget {
 class _GamesHubViewState extends State<GamesHubView> {
   int _packetJumperHighScore = 0;
   int _bugSmasherHighScore = 0;
+  int _serverPingHighScore = 0;
 
   @override
   void initState() {
@@ -25,6 +27,7 @@ class _GamesHubViewState extends State<GamesHubView> {
     setState(() {
       _packetJumperHighScore = prefs.getInt('packet_jumper_high_score') ?? 0;
       _bugSmasherHighScore = prefs.getInt('bug_smasher_high_score') ?? 0;
+      _serverPingHighScore = prefs.getInt('server_ping_high_score') ?? 0;
     });
   }
 
@@ -135,12 +138,18 @@ class _GamesHubViewState extends State<GamesHubView> {
             ),
           ),
 
-          // --- Server Ping (still locked) ---
-          const SliverToBoxAdapter(
-            child: _LockedGameCard(
+          // --- Server Ping Card (now active) ---
+          SliverToBoxAdapter(
+            child: _GameCard(
               title: 'Server Ping',
-              subtitle: 'Keep the packets alive across a maze of routers.',
-              emoji: '🖥️',
+              subtitle: 'Watch the radar sweep — tap PING the instant it hits the cyan sector!',
+              emoji: '📡',
+              accentColor: const Color(0xFF00F0FF),
+              highScore: _serverPingHighScore,
+              onPlay: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => const ServerPingView()));
+                _refreshScores();
+              },
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
