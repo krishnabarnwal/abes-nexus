@@ -2,12 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'views/arcade/games_hub_view.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
@@ -84,6 +86,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     const VaultView(),
     const DashboardView(),
     const SpeedTestView(),
+    const GamesHubView(),
   ];
 
   @override
@@ -118,6 +121,10 @@ class _MainScaffoldState extends State<MainScaffold> {
             icon: Icon(Icons.speed),
             label: 'Network',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.videogame_asset),
+            label: 'Arcade',
+          ),
         ],
       ),
     );
@@ -141,6 +148,7 @@ class _VaultViewState extends State<VaultView> {
 
   bool _obscurePassword = true;
   String _statusMessage = 'Awaiting Credentials';
+  int _totalLogins = 0;
 
   @override
   void initState() {
@@ -156,6 +164,11 @@ class _VaultViewState extends State<VaultView> {
   }
 
   Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _totalLogins = prefs.getInt('total_logins') ?? 0;
+    });
+
     try {
       final savedId = await _storage.read(key: 'abes_id');
       final savedPassword = await _storage.read(key: 'abes_password');
@@ -179,6 +192,11 @@ class _VaultViewState extends State<VaultView> {
     final savedPassword = await _storage.read(key: 'abes_password');
 
     if (savedId == null || savedPassword == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please save credentials first'), backgroundColor: Colors.red),
+        );
+      }
       return;
     }
 
@@ -193,15 +211,40 @@ class _VaultViewState extends State<VaultView> {
           'username': savedId,
           'password': savedPassword,
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
-      setState(() {
-        _statusMessage = 'Status: ${response.statusCode}';
-      });
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        setState(() {
+          _totalLogins++;
+          _statusMessage = 'Status: ${response.statusCode}';
+        });
+        await prefs.setInt('total_logins', _totalLogins);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Wi-Fi Login Successful!'), backgroundColor: Colors.green),
+          );
+        }
+      } else {
+        setState(() {
+          _statusMessage = 'Status: ${response.statusCode}';
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login Failed: Not on campus network or incorrect credentials.'), backgroundColor: Colors.red),
+          );
+        }
+      }
     } catch (e) {
       setState(() {
         _statusMessage = 'Error: $e';
       });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login Failed: Not on campus network or incorrect credentials.'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -225,7 +268,7 @@ class _VaultViewState extends State<VaultView> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Saved to encrypted storage')),
+        const SnackBar(content: Text('Credentials securely saved to Vault.'), backgroundColor: Colors.green),
       );
     }
   }
@@ -268,11 +311,11 @@ class _VaultViewState extends State<VaultView> {
                       ),
                     ],
                   ),
-                  child: const Column(
+                  child: Column(
                     children: [
-                      Text('Total Logins', style: TextStyle(color: Colors.grey)),
-                      SizedBox(height: 8),
-                      Text('42', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                      const Text('Total Logins', style: TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 8),
+                      Text('$_totalLogins', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -292,11 +335,11 @@ class _VaultViewState extends State<VaultView> {
                       ),
                     ],
                   ),
-                  child: const Column(
+                  child: Column(
                     children: [
-                      Text('Time Saved', style: TextStyle(color: Colors.grey)),
-                      SizedBox(height: 8),
-                      Text('21 mins', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                      const Text('Time Saved', style: TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 8),
+                      Text('${(_totalLogins * 0.5).toInt()} mins', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -362,6 +405,11 @@ class _VaultViewState extends State<VaultView> {
               setState(() {
                 _statusMessage = 'Background worker is active';
               });
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Background engine enabled. Waiting for ABES network...'), backgroundColor: Colors.blue),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
