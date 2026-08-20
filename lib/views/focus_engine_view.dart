@@ -519,9 +519,9 @@ class _FocusEngineViewState extends State<FocusEngineView>
               child: Center(
                 child: Column(
                   children: [
-                    const Text('📋', style: TextStyle(fontSize: 36)),
-                    const SizedBox(height: 8),
-                    const Text(
+                    Text('📋', style: TextStyle(fontSize: 36)),
+                    SizedBox(height: 8),
+                    Text(
                       'No objectives yet.\nAdd one above to get started!',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white30, fontSize: 13),
