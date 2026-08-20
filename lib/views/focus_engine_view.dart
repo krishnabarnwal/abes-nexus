@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -514,8 +514,8 @@ class _FocusEngineViewState extends State<FocusEngineView>
 
           // Task list
           if (_tasks.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
               child: Center(
                 child: Column(
                   children: [
