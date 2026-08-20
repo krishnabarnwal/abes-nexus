@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'views/arcade/games_hub_view.dart';
+import 'views/focus_engine_view.dart';
 import 'widgets/ui_kit.dart';
 
 @pragma('vm:entry-point')
@@ -89,6 +90,7 @@ class _MainScaffoldState extends State<MainScaffold>
     const DashboardView(),
     const SpeedTestView(),
     const GamesHubView(),
+    const FocusEngineView(),
   ];
 
   static const _navItems = [
@@ -96,6 +98,7 @@ class _MainScaffoldState extends State<MainScaffold>
     (Icons.grid_view_rounded, 'Campus'),
     (Icons.speed_rounded, 'Network'),
     (Icons.videogame_asset_rounded, 'Arcade'),
+    (Icons.center_focus_strong_rounded, 'Focus'),
   ];
 
   @override
@@ -164,7 +167,7 @@ class _MainScaffoldState extends State<MainScaffold>
 
   Widget _buildFloatingNav() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
         child: BackdropFilter(
@@ -227,7 +230,7 @@ class _NavItem extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 72,
+        width: 60,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
