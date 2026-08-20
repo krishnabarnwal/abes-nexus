@@ -628,6 +628,7 @@ class _VaultViewState extends State<VaultView> {
               ],
             ),
           ),
+          const SizedBox(height: 120),
         ],
       ),
     );

@@ -145,7 +145,7 @@ class _GamesHubViewState extends State<GamesHubView> {
             ),
           ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
       ),
     );
