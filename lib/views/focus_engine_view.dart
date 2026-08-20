@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -39,8 +39,7 @@ class _FocusEngineViewState extends State<FocusEngineView>
   late AnimationController _ringCtrl;   // smooth ring interpolation (60fps)
   late AnimationController _pulseCtrl;  // breathing heartbeat
   late Animation<double> _pulseAnim;
-  double _ringProgress = 1.0;           // 1.0 = full, 0.0 = empty
-  double _ringTarget  = 1.0;
+  double _ringProgress = 1.0;
 
   // ── Stats ──────────────────────────────────────────────────────────────
   int _todaySessions   = 0;
@@ -113,14 +112,12 @@ class _FocusEngineViewState extends State<FocusEngineView>
         _timeLeftSec = dur;
         _totalSec    = dur;
         _isRunning   = false;
-        _ringTarget  = 1.0;
       });
       _animateRingTo(1.0);
     } else {
       _timeLeftSec = dur;
       _totalSec    = dur;
       _isRunning   = false;
-      _ringTarget  = 1.0;
       _ringProgress = 1.0;
     }
   }
@@ -157,8 +154,6 @@ class _FocusEngineViewState extends State<FocusEngineView>
 
   void _animateRingTo(double target) {
     _ringCtrl.stop();
-    _ringCtrl.value = _ringProgress;
-    _ringTarget = target;
     // Tween from current to target in 950ms
     final tween = Tween<double>(begin: _ringProgress, end: target);
     _ringCtrl.value = 0.0;
