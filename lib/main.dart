@@ -10,6 +10,7 @@ import 'package:workmanager/workmanager.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'views/arcade/games_hub_view.dart';
 import 'views/focus_engine_view.dart';
 import 'widgets/ui_kit.dart';
@@ -18,6 +19,11 @@ import 'widgets/ui_kit.dart';
 void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      if (connectivityResult.contains(ConnectivityResult.mobile)) {
+        return false;
+      }
+
       const storage = FlutterSecureStorage(
         aOptions: AndroidOptions(encryptedSharedPreferences: true),
       );
@@ -32,14 +38,19 @@ void callbackDispatcher() {
         ..badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
       final ioClient = IOClient(httpClient);
 
-      await ioClient.post(
+      final payload = 'mode=191&username=${Uri.encodeComponent(savedId)}&password=${Uri.encodeComponent(savedPassword)}';
+
+      final response = await ioClient.post(
         Uri.parse('https://192.168.1.254:8090/login.xml'),
-        body: {
-          'username': savedId,
-          'password': savedPassword,
-        },
-      );
-      return true;
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: payload,
+      ).timeout(const Duration(seconds: 7));
+
+      if (response.body.contains('<message><![CDATA[You have successfully logged in]]></message>')) {
+        return true;
+      } else {
+        return false;
+      }
     } catch (e) {
       return false;
     }
@@ -330,6 +341,14 @@ class _VaultViewState extends State<VaultView> {
   }
 
   Future<void> _loginToAbesWifi() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.mobile)) {
+      if (mounted) {
+        showToast(context, 'Timeout: Ensure Mobile Data is OFF and you are connected to the network.', type: ToastType.error);
+      }
+      return;
+    }
+
     final savedId = await _storage.read(key: 'abes_id');
     final savedPassword = await _storage.read(key: 'abes_password');
 
@@ -345,19 +364,19 @@ class _VaultViewState extends State<VaultView> {
         ..badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
       final ioClient = IOClient(httpClient);
 
+      final payload = 'mode=191&username=${Uri.encodeComponent(savedId)}&password=${Uri.encodeComponent(savedPassword)}';
+
       final response = await ioClient.post(
         Uri.parse('https://192.168.1.254:8090/login.xml'),
-        body: {
-          'username': savedId,
-          'password': savedPassword,
-        },
-      ).timeout(const Duration(seconds: 10));
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: payload,
+      ).timeout(const Duration(seconds: 7));
 
-      if (response.statusCode == 200) {
+      if (response.body.contains('<message><![CDATA[You have successfully logged in]]></message>')) {
         final prefs = await SharedPreferences.getInstance();
         setState(() {
           _totalLogins++;
-          _statusMessage = 'Status: ${response.statusCode}';
+          _statusMessage = 'Status: Logged In';
         });
         await prefs.setInt('total_logins', _totalLogins);
         
@@ -366,18 +385,18 @@ class _VaultViewState extends State<VaultView> {
         }
       } else {
         setState(() {
-          _statusMessage = 'Status: ${response.statusCode}';
+          _statusMessage = 'Status: Failed / Max Logins Reached';
         });
         if (mounted) {
-          showToast(context, 'Login Failed: Not on campus network or incorrect credentials.', type: ToastType.error);
+          showToast(context, 'Login Failed: Check credentials or network state.', type: ToastType.error);
         }
       }
     } catch (e) {
       setState(() {
-        _statusMessage = 'Error: $e';
+        _statusMessage = 'Error: Connection Timeout';
       });
       if (mounted) {
-        showToast(context, 'Login Failed: Connection error.', type: ToastType.error);
+        showToast(context, 'Timeout: Ensure Mobile Data is OFF and you are connected to the network.', type: ToastType.error);
       }
     }
   }
